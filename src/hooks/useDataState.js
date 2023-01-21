@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 
 const generateMockData = () => {
     const event = {
@@ -22,11 +22,46 @@ const generateMockData = () => {
 }
 
 
-export const useDataState = () => {
+export const useDataState = (modalState) => {
     const eventsMapRef = useRef(generateMockData().eventMap);
     const dayMapRef = useRef(generateMockData().dayMap);
+
+
+    const updateDayEvents = () => {
+        return Array.from(dayMapRef.current.entries()).map(([date, { eventIds, rowNumber, columnNumber }]) => ({
+            rowNumber,
+            columnNumber,
+            date,
+            eventTitles: eventIds.map(eventId => ({ title: eventsMapRef.current.get(eventId).title, eventId }))
+        }));
+
+    };
+
+
+
+    const addEvent = useCallback(event => {
+
+        const eventsMap = eventsMapRef.current;
+        const eventId = eventsMap.size + 1;
+        const dayMap = dayMapRef.current;
+
+        eventsMap.set(eventId, event);
+        if (dayMap.has(modalState.date)) {
+            dayMap.get(modalState.date).eventIds.push(eventId);
+        }
+        else {
+            dayMap.set(modalState.date, {
+                rowNumber: modalState.rowNumber,
+                columnNumber: modalState.columnNumber,
+                eventIds: [eventId]
+            });
+        }
+
+    }, [modalState]);
+
+
     return {
-        eventsMap: eventsMapRef.current,
-        dayMap: dayMapRef.current
+        addEvent,
+        dayEvents: updateDayEvents()
     };
 }

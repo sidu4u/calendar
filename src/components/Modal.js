@@ -9,7 +9,7 @@ const Modal = ({ children, isOpen }) => {
             visibility: !isOpen?'hidden':'initial'
         }
     }>
-        {children}
+        {isOpen && children}
     </div>
 }
 
